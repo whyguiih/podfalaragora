@@ -1,0 +1,171 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-studio-bg: #0d1117;
+    --color-studio-card: #161b22;
+    --color-studio-border: #30363d;
+    --color-studio-accent: #58a6ff;
+    --color-studio-accent-hover: #79b8ff;
+    --color-studio-danger: #f85149;
+    --color-studio-success: #3fb950;
+    --color-studio-warning: #d29922;
+    --color-studio-text: #e6edf3;
+    --color-studio-text-muted: #8b949e;
+  }
+
+  * {
+    border-color: var(--color-studio-border);
+  }
+
+  body {
+    background-color: var(--color-studio-bg);
+    color: var(--color-studio-text);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: var(--color-studio-bg);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-studio-border);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-studio-text-muted);
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn;
+    background-color: var(--color-studio-accent);
+    color: var(--color-studio-bg);
+  }
+  .btn-primary:hover {
+    background-color: var(--color-studio-accent-hover);
+  }
+  .btn-primary:focus {
+    box-shadow: 0 0 0 2px var(--color-studio-accent);
+  }
+
+  .btn-danger {
+    @apply btn;
+    background-color: var(--color-studio-danger);
+    color: white;
+  }
+  .btn-danger:hover {
+    background-color: #dc2626;
+  }
+  .btn-danger:focus {
+    box-shadow: 0 0 0 2px var(--color-studio-danger);
+  }
+
+  .btn-secondary {
+    @apply btn;
+    background-color: var(--color-studio-card);
+    border: 1px solid var(--color-studio-border);
+    color: var(--color-studio-text);
+  }
+  .btn-secondary:hover {
+    background-color: var(--color-studio-border);
+  }
+  .btn-secondary:focus {
+    box-shadow: 0 0 0 2px var(--color-studio-border);
+  }
+
+  .btn-ghost {
+    @apply btn;
+    background-color: transparent;
+    color: var(--color-studio-text);
+  }
+  .btn-ghost:hover {
+    background-color: var(--color-studio-card);
+  }
+  .btn-ghost:focus {
+    box-shadow: 0 0 0 2px var(--color-studio-border);
+  }
+
+  .input {
+    @apply w-full px-4 py-2.5 rounded-lg transition-all duration-200;
+    background-color: var(--color-studio-bg);
+    border: 1px solid var(--color-studio-border);
+    color: var(--color-studio-text);
+  }
+  .input::placeholder {
+    color: var(--color-studio-text-muted);
+  }
+  .input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-studio-accent);
+    border-color: transparent;
+  }
+
+  .card {
+    @apply rounded-xl p-6;
+    background-color: var(--color-studio-card);
+    border: 1px solid var(--color-studio-border);
+  }
+
+  .track-meter {
+    @apply h-full rounded-t transition-all duration-75 ease-out;
+    background-color: var(--color-studio-accent);
+  }
+
+  .track-meter-clipping {
+    background-color: var(--color-studio-danger);
+  }
+
+  .track-meter-warning {
+    background-color: var(--color-studio-warning);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  .recording-pulse {
+    animation: recordingPulse 1s ease-in-out infinite;
+  }
+
+  @keyframes recordingPulse {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 0.7;
+    }
+  }
+}
