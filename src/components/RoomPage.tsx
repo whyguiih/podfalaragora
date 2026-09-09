@@ -63,6 +63,9 @@ export function RoomPage() {
       return;
     }
 
+    let mounted = true;
+    let initTimeout: ReturnType<typeof setTimeout>;
+
     const initRoom = async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -75,6 +78,11 @@ export function RoomPage() {
             channelCount: 2,
           },
         });
+
+        if (!mounted) {
+          stream.getTracks().forEach(t => t.stop());
+          return;
+        }
 
         mediaStreamRef.current = stream;
         setLocalStream(stream);
@@ -156,17 +164,32 @@ export function RoomPage() {
             });
           })
           .subscribe(async (status) => {
+            if (!mounted) return;
+            
             if (status === 'SUBSCRIBED') {
+              clearTimeout(initTimeout);
               await channel.track({ user_id: user.id, name: user.name });
               setConnected(true);
               setIsInitialized(true);
+            } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+              clearTimeout(initTimeout);
+              console.error('Supabase connection failed:', status);
+              setError(`Erro de conexão com o servidor (${status}). Verifique suas credenciais do Supabase e se as tabelas foram criadas.`);
             }
           });
+
+        // Timeout fallback - 10 segundos
+        initTimeout = setTimeout(() => {
+          if (mounted && !isInitialized) {
+            console.warn('Supabase connection timeout, continuing anyway...');
+            setIsInitialized(true);
+          }
+        }, 10000);
 
         signalingChannelRef.current = channel;
 
         const roomData = await getRoom(roomId!);
-        if (roomData) {
+        if (roomData && mounted) {
           const roomRow = roomData as unknown as { id: string; name: string; owner_id: string; participants: Record<string, unknown>; is_recording: boolean; recording_started_at: number | null; created_at: number };
           setRoom({
             id: roomRow.id,
@@ -184,22 +207,33 @@ export function RoomPage() {
           if (roomRow.is_recording && roomRow.recording_started_at) {
             setRecording(true, { startedAt: roomRow.recording_started_at } as RecordingSession);
           }
+        } else if (!roomData && mounted) {
+          setError('Sala não encontrada. Verifique o ID da sala.');
         }
       } catch (error) {
+        if (!mounted) return;
         console.error('Error initializing room:', error);
-        setError('Erro ao acessar microfone. Verifique as permissões.');
+        if (error instanceof Error && error.name === 'NotAllowedError') {
+          setError('Permissão de microfone negada. Permita o acesso nas configurações do navegador.');
+        } else if (error instanceof Error && error.name === 'NotFoundError') {
+          setError('Nenhum microfone encontrado. Conecte um microfone e tente novamente.');
+        } else {
+          setError('Erro ao acessar microfone. Verifique as permissões.');
+        }
       }
     };
 
     initRoom();
 
     return () => {
+      mounted = false;
+      clearTimeout(initTimeout);
       cleanup();
       signalingChannelRef.current?.untrack();
       signalingChannelRef.current?.unsubscribe();
       mediaStreamRef.current?.getTracks().forEach((t) => t.stop());
     };
-  }, [roomId, user, navigate, selectedInput, createPeerConnection, sendSignal, addParticipant, removeParticipant, updateParticipant, setLocalStream, setRoom, setRecording, setConnected, setError, cleanup]);
+  }, [roomId, user, navigate, selectedInput, createPeerConnection, sendSignal, addParticipant, removeParticipant, updateParticipant, setLocalStream, setRoom, setRecording, setConnected, setError, cleanup, isInitialized]);
 
   const handleOffer = async (pc: RTCPeerConnection, offer: RTCSessionDescriptionInit, from: string) => {
     await pc.setRemoteDescription(new RTCSessionDescription(offer));
